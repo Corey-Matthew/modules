@@ -28,3 +28,6 @@ variable "server_port" {
 
 }
 
+variable "enable_autoscaling" {
+	description = "When set to true, will enable autoscaling for EC2"
+}
