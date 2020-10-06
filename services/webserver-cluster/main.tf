@@ -120,7 +120,7 @@ resource "aws_autoscaling_schedule" "scale_in_at_night" {
 resource "aws_cloudwatch_metric_alarm" "high_cpu_utilization" {
 	alarm_name = "${var.cluster_name}-high-utilization"
 	namespace = "AWS/EC2"
-	mettric_name = "CPUUtilization"
+	metric_name = "CPUUtilization"
 
 	dimensions = {
 		AutoScalingGroupName = aws_autoscaling_group.example.name
@@ -139,7 +139,7 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu_credit_balance" {
 
 	alarm_name = "${var.cluster_name}-low-cpu-credit-balance"
 	namespace = "AWS/EC2"
-	mettric_name = "CPUCreditBalance"
+	metric_name = "CPUCreditBalance"
 
 	dimensions = {
 		AutoScalingGroupName = aws_autoscaling_group.example.name
