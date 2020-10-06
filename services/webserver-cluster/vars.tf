@@ -31,3 +31,8 @@ variable "server_port" {
 variable "enable_autoscaling" {
 	description = "When set to true, will enable autoscaling for EC2"
 }
+
+variable "enable_new_user_data" {
+	description = "If set to true, use the new User Data script"
+}
+

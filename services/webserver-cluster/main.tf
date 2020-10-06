@@ -22,7 +22,7 @@ resource "aws_launch_configuration" "example" {
 	instance_type = var.instance_type
 	security_groups = [aws_security_group.instance.id]
 	
-	user_data = data.template_file.user_data.rendered 
+	user_data = element(cat(data.template_file.user_data.rendered, data.template_file.user_data_new.rendered), 0) 
 	
 	
 
@@ -117,6 +117,43 @@ resource "aws_autoscaling_schedule" "scale_in_at_night" {
 	autoscaling_group_name = aws_autoscaling_group.example.name
 }
 
+resource "aws_cloudwatch_metric_alarm" "high_cpu_utilization" {
+	alarm_name = "${var.cluster_name}-high-utilization"
+	namespace = "AWS/EC2"
+	mettric_name = "CPUUtilization"
+
+	dimensions = {
+		AutoScalingGroupName = aws_autoscaling_group.example.name
+	}
+
+	comparison_operator = "GreaterThanThreshold"
+	evaluation_periods = 1
+	period = 300
+	statistic = "Average"
+	threshold = 90
+	unit = "Percent"
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu_credit_balance" {
+	count = format("%.1s", var.instance_type) == "t" ? 1 : 0
+
+	alarm_name = "${var.cluster_name}-low-cpu-credit-balance"
+	namespace = "AWS/EC2"
+	mettric_name = "CPUCreditBalance"
+
+	dimensions = {
+		AutoScalingGroupName = aws_autoscaling_group.example.name
+	}
+
+	comparison_operator = "LessThanThreshold"
+	evaluation_periods = 1
+	period = 300
+	statistic = "Minimum"
+	threshold = 10
+	unit = "Count"
+}
+
+
 data "aws_availability_zones" "all" {}
 
 
@@ -131,11 +168,20 @@ data "terraform_remote_state" "db" {
 
 
 data "template_file" "user_data" {
+	count = 1 - (var.enable_new_user_data ? 1 : 0) 
 	template = "${file("${path.module}/user-data.sh")}"
 	vars = {
 		server_port = var.server_port
 		db_address = data.terraform_remote_state.db.outputs.address
 		db_port = data.terraform_remote_state.db.outputs.port
+	}
+}
+
+data "template_file" "user_data_new" {
+	count = var.enable_new_user_data ? 1 : 0
+	template = "${file("${path.module}/user-data-new.sh")}"
+	vars = {
+		server_port = var.server_port
 	}
 }
 
