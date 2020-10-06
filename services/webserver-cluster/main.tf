@@ -22,7 +22,7 @@ resource "aws_launch_configuration" "example" {
 	instance_type = var.instance_type
 	security_groups = [aws_security_group.instance.id]
 	
-	user_data = element(cat(data.template_file.user_data.*.rendered, data.template_file.user_data_new.*.rendered), 0) 
+	user_data = element(concat(data.template_file.user_data.*.rendered, data.template_file.user_data_new.*.rendered), 0) 
 	
 	
 
